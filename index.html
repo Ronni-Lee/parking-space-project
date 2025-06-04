@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="./script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parking Lot Behavior Judge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    * {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: 'Press Start 2P', monospace;
+  background-color: #a0522d;
+  color: white;
+  overflow: hidden;
+}
+#video-bg {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  width: 1600px;
+  height: 900px;
+  object-fit: cover;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+}
+.start-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 2;
+  cursor: pointer;
+}
+.start-screen h1 {
+  color: white;
+  font-size: 1.2rem;
+  text-align: center;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100vh;
+  padding-bottom: 10vh;
+  z-index: 1;
+}
+#behaviorInput {
+  width: 60vw;
+  padding: 1rem;
+  font-size: 0.7rem;
+  background-color: transparent;
+  border: 4px solid white;
+  color: white;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-family: 'Press Start 2P', monospace;
+}
+#behaviorInput.green {
+  border-color: lime;
+  box-shadow: 0 0 16px lime;
+}
+#behaviorInput.red {
+  border-color: red;
+  box-shadow: 0 0 16px red;
+}
+#result {
+  margin-top: 2rem;
+  font-size: 0.7rem;
+  white-space: pre-line;
+  text-align: center;
+  max-width: 80vw;
+  transition: color 0.3s ease;
+}
+
+/* 新增的樣式控制 result 的文字顏色 */
+#result.green {
+  color: lime;
+}
+#result.red {
+  color: red;
+}
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Press Start 2P', monospace;
+      background-color: #a0522d;
+      color: white;
+      overflow: hidden;
+    }
+    #video-bg {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 1600px;
+      height: 900px;
+      object-fit: cover;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+    .start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .start-screen h1 {
+      color: white;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100vh;
+      padding-bottom: 10vh;
+      z-index: 1;
+    }
+    #behaviorInput {
+      width: 60vw;
+      padding: 0.5rem;
+      font-size: 0.5rem;
+      background-color: transparent;
+      border: 8px solid white;
+      color: white;
+      text-align: center;
+      transition: all 0.3s ease;
+      font-family: 'Press Start 2P', monospace;
+    }
+    #behaviorInput.green {
+      border-color: lime;
+      box-shadow: 0 0 16px lime;
+    }
+    #behaviorInput.red {
+      border-color: red;
+      box-shadow: 0 0 16px red;
+    }
+    #result {
+      margin-top: 2rem;
+      font-size: 1rem;
+      white-space: pre-line;
+      text-align: center;
+      max-width: 80vw;
+    }
+  </style>
+</head>
+<body>
+  <div class="start-screen" onclick="startExperience()">
+    <h1>Click to Enter Parking Space</h1>
+  </div>
+
+  <video id="video-bg" autoplay loop muted>
+    <source src="parking.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+
+  <div class="container" style="display: none">
+    <input type="text" id="behaviorInput" placeholder="What are you doing in the parking space?" />
+    <div id="result"></div>
+  </div>
+
+  <audio id="yesSound" src="YES.mp3"></audio>
+  <audio id="noSound" src="NO.mp3"></audio>
+
+  <script>
+    const inputField = document.getElementById('behaviorInput');
+    const result = document.getElementById('result');
+    const yesSound = document.getElementById('yesSound');
+    const noSound = document.getElementById('noSound');
+    const container = document.querySelector('.container');
+    const startScreen = document.querySelector('.start-screen');
+    const video = document.getElementById('video-bg');
+
+    const responses = {
+      "SMOKING": ["YES. Air pollution accepted for identity expression."],
+      "USING THE PHONE": ["YES. Digital sedation within acceptable range.", "YES. Touch-based agency detected."],
+      "PAYING RESPECTS": ["NO. Spiritual submission outside jurisdiction."],
+      "BOWING": ["YES. Submission gesture meets standard format."],
+      "抽煙": ["YES。空氣污染屬於個人表現的自由。"],
+      "使用手機": ["YES。數位麻醉行為已納入通融範圍。"],
+      "鞠躬": ["YES。鞠躬角度合乎社會期望。"],
+      "拜拜": ["NO。信仰儀式未被此格授權。"]
+    };
+
+    const yesMessages = [
+      "YES - THIS BEHAVIOR IS ACCEPTED BY THE SYSTEM",
+      "YES - YOU HAVE BEEN RECOGNIZED AS VALID",
+      "YES - THE FRAME ALIGNS WITH YOUR GESTURE",
+      "YES - YOUR ACTION FITS WITHIN THE PARAMETERS",
+      "YES - PERMISSION GRANTED FOR THIS OCCUPATION",
+      "YES - THIS MOVEMENT IS ALLOWED HERE",
+      "YES - THE SYSTEM RESPONDS POSITIVELY",
+      "YES - YOUR PRESENCE IS WELCOME IN THIS SPACE",
+      "YES - THE SQUARE ACKNOWLEDGES YOUR ENTRY",
+      "YES - THIS CHOICE MATCHES THE CODE",
+      "YES - YOU ARE WITHIN TOLERABLE BOUNDARIES",
+      "YES - ACCESS GRANTED TO THIS AREA",
+      "YES - THE GRID ACCEPTS YOUR CONTRIBUTION",
+      "YES - YOUR INTENTION IS IN ALIGNMENT",
+      "YES - YOU ARE ACTING WITHIN PERMISSION",
+      "YES - THIS GESTURE IS REGISTERED AS VALID",
+      "YES - THE STRUCTURE ALLOWS THIS ENTRY",
+      "YES - YOUR PRESENCE FITS THE SET ORDER",
+      "YES - SYSTEM FLAGS THIS BEHAVIOR AS APPROVED",
+      "YES - YOU MAY CONTINUE IN THIS FORMAT",
+      "YES - THE SYSTEM CONFIRMS YOUR POSITION",
+      "YES - YOU HAVE PASSED THROUGH THE CHECKPOINT",
+      "YES - THE ZONE RESPONDS IN YOUR FAVOR",
+      "YES - THIS IS AN AUTHORIZED USE OF SPACE",
+      "YES - THE GRID ADJUSTS TO YOUR MOVEMENT"
+    ];
+
+    const noMessages = [
+      "NO - THIS BEHAVIOR IS OUTSIDE PERMITTED PARAMETERS",
+      "NO - YOUR PRESENCE IS NOT RECOGNIZED HERE",
+      "NO - THE SYSTEM CANNOT APPROVE THIS ACTION",
+      "NO - THIS MOVEMENT BREACHES THE DESIGNATED LIMITS",
+      "NO - YOU ARE OCCUPYING A RESTRICTED SPACE",
+      "NO - SUCH ACTION IS NOT AUTHORIZED",
+      "NO - THE FRAME REJECTS THIS GESTURE",
+      "NO - YOU ARE BEYOND THE LINE OF ACCEPTABILITY",
+      "NO - THIS CHOICE FALLS OUTSIDE THE SYSTEM'S TOLERANCE",
+      "NO - THE GRID CANNOT ACCOMMODATE YOU HERE",
+      "NO - THIS CONDUCT IS FLAGGED AS IMPROPER",
+      "NO - ACCESS TO THIS ZONE IS DENIED",
+      "NO - YOUR INTENTION DISRUPTS THE SET ORDER",
+      "NO - THIS ACTION VIOLATES UNSEEN RULES",
+      "NO - YOU ARE NOT WELCOME IN THIS FORM",
+      "NO - THE SQUARE HOLDS NO SPACE FOR YOU",
+      "NO - THIS BEHAVIOR FALLS OUTSIDE OUR CODE",
+      "NO - THE SYSTEM REMAINS SILENT TO YOUR REQUEST",
+      "NO - THIS MOVEMENT IS NOT RECOGNIZED AS VALID",
+      "NO - RESTRICTIONS OVERRIDE YOUR INTENT",
+      "NO - THIS INTERACTION IS BLOCKED BY DEFAULT",
+      "NO - THE MARGIN HAS BEEN BREACHED",
+      "NO - YOU ARE ACTING WITHOUT PERMISSION",
+      "NO - THIS GESTURE IS OUT OF ALIGNMENT",
+      "NO - THE STRUCTURE DISALLOWS THIS ENTRY"
+    ];
+
+    function randomFromArray(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function startExperience() {
+      startScreen.style.display = 'none';
+      container.style.display = 'flex';
+      video.muted = false;
+      video.play();
+    }
+
+    inputField.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        const userInputRaw = inputField.value.trim();
+        const userInput = userInputRaw.toUpperCase();
+        if (!userInput || userInput.length < 2) return;
+
+        inputField.classList.remove('green', 'red');
+        const match = responses[userInput] || responses[userInputRaw];
+        let message;
+
+        if (match) {
+          message = randomFromArray(match);
+          inputField.classList.add('green');
+          yesSound.play();
+        } else {
+          const isYes = Math.random() > 0.5;
+          message = isYes
+            ? randomFromArray(yesMessages)
+            : randomFromArray(noMessages);
+          inputField.classList.add(isYes ? 'green' : 'red');
+          (isYes ? yesSound : noSound).play();
+        }
+
+        result.innerText = message;
+      }
+    });
+  </script>
+</body>
+</html>
